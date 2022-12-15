@@ -143,13 +143,29 @@ exports.getAllReservations = getAllReservations;
     queryString += `AND owner_id = $${queryParams.length} `;
   }
 
+  if (options.minimum_price_per_night) {
+    queryParams.push(`${options.minimum_price_per_night * 100}`);
+    queryString += `AND cost_per_night >= $${queryParams.length} `;
+  }
+
+  if (options.maximum_price_per_night) {
+    queryParams.push(`${options.maximum_price_per_night * 100}`);
+    queryString += `AND cost_per_night <= $${queryParams.length} `;
+  }
+
+  if (options.minimum_rating) {
+    queryParams.push(`${options.minimum_rating}`);
+    queryString += `GROUP BY properties.id
+    HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
+  } else {
+    queryString += `GROUP BY properties.id`
+  }
+
   // 4
   queryParams.push(limit);
-  queryString += `
-  GROUP BY properties.id
+  queryString += ` 
   ORDER BY cost_per_night
-  LIMIT $${queryParams.length};
-  `;
+  LIMIT $${queryParams.length};`;
 
   
   // 5
