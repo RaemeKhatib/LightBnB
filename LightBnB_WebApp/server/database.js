@@ -60,12 +60,21 @@ exports.getUserWithId = getUserWithId;
  * @param {{name: string, password: string, email: string}} user
  * @return {Promise<{}>} A promise to the user.
  */
-const addUser = function(user) {
-  const userId = Object.keys(users).length + 1;
-  user.id = userId;
-  users[userId] = user;
-  return Promise.resolve(user);
-};
+ const addUser = function(user) {
+  return pool
+   .query(`INSERT INTO users (
+    name, email, password) VALUES ($1, $2, $3)  RETURNING *;`, [user.name, user.email, user.password] )
+    .then((result) => {
+      console.log(result.rows[0]);
+      return result.rows[0];
+    })
+  
+    .catch((err) => {
+      console.log(err.message);
+    });
+  
+ };
+ 
 exports.addUser = addUser;
 
 /// Reservations
